@@ -22,11 +22,9 @@ services:
       - teddy-network
     restart: unless-stopped
 
-  # APLICAÇÃO BACK-END
+  # APLICAÇÃO BACK-END (Puxando do GitHub Registry)
   backend:
-    build:
-      context: ./
-      dockerfile: back-end/Dockerfile
+    image: ghcr.io/${REPO_OWNER_LOWER:-immaculata-digital}/teddy-backend:latest
     container_name: teddy-backend
     ports:
       - '${BACKEND_PORT:-3000}:3000'
@@ -39,11 +37,9 @@ services:
       - teddy-network
     restart: unless-stopped
 
-  # APLICAÇÃO FRONT-END
+  # APLICAÇÃO FRONT-END (Puxando do GitHub Registry)
   frontend:
-    build:
-      context: ./
-      dockerfile: front-end/Dockerfile
+    image: ghcr.io/${REPO_OWNER_LOWER:-immaculata-digital}/teddy-frontend:latest
     container_name: teddy-frontend
     ports:
       - '${FRONTEND_PORT:-4200}:80'

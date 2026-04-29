@@ -95,6 +95,8 @@ jobs:
           file: front-end/Dockerfile
           push: true
           tags: ghcr.io/${{ steps.vars.outputs.repo_owner }}/teddy-frontend:latest
+          build-args: |
+            VITE_API_URL=https://api-teddy.thiagolamberti.com.br/api/v1
 
   # ─────────────────────────────────────────────────
   # STAGE 3: Deploy (Roda na sua VPS)
@@ -119,7 +121,7 @@ jobs:
             echo "DB_PASS=${{ secrets.DB_PASS }}"
             echo "DB_NAME=${{ secrets.DB_NAME }}"
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}"
-            echo "VITE_API_URL=http://localhost:3000/api/v1"
+            echo "VITE_API_URL=https://api-teddy.thiagolamberti.com.br/api/v1"
             echo "REPO_OWNER_LOWER=${{ needs.build-and-push.outputs.repo_owner }}"
           } > .env
       - name: 📥 Pull Images

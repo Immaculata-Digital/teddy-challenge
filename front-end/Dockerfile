@@ -9,6 +9,8 @@ RUN npm ci --legacy-peer-deps
 
 FROM base AS builder
 COPY . .
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 RUN npx nx build front-end --prod
 
 FROM nginx:alpine AS production

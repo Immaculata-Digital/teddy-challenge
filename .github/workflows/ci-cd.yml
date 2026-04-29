@@ -15,7 +15,7 @@ env:
 
 jobs:
   # ─────────────────────────────────────────────────
-  # STAGE 1: Validação (Roda no GitHub)
+  # JOB: Validação BACK-END
   # ─────────────────────────────────────────────────
   validate-backend:
     name: Backend (Lint & Test)
@@ -30,9 +30,16 @@ jobs:
           cache: 'npm'
       - run: npm ci --legacy-peer-deps
       - uses: nrwl/nx-set-shas@v4
-      - run: npx nx affected --target=test --projects=api --base=$NX_BASE --head=$NX_HEAD --passWithNoTests
-      - run: npx nx affected --target=lint --projects=api --base=$NX_BASE --head=$NX_HEAD
+      - name: Run Backend Lint
+        run: npx nx lint api
+      - name: Run Backend Tests
+        run: npx nx test api --passWithNoTests
+      - name: Run Backend Build
+        run: npx nx build api
 
+  # ─────────────────────────────────────────────────
+  # JOB: Validação FRONT-END
+  # ─────────────────────────────────────────────────
   validate-frontend:
     name: Frontend (Lint & Test)
     runs-on: ubuntu-latest
@@ -46,8 +53,12 @@ jobs:
           cache: 'npm'
       - run: npm ci --legacy-peer-deps
       - uses: nrwl/nx-set-shas@v4
-      - run: npx nx affected --target=test --projects=front-end --base=$NX_BASE --head=$NX_HEAD --passWithNoTests
-      - run: npx nx affected --target=lint --projects=front-end --base=$NX_BASE --head=$NX_HEAD
+      - name: Run Frontend Lint
+        run: npx nx lint front-end
+      - name: Run Frontend Tests
+        run: npx nx test front-end --passWithNoTests
+      - name: Run Frontend Build
+        run: npx nx build front-end
 
   # ─────────────────────────────────────────────────
   # STAGE 2: Build & Push (Roda no GitHub)
@@ -62,19 +73,16 @@ jobs:
     steps:
       - name: 🚀 Checkout
         uses: actions/checkout@v4
-
       - name: 🆔 Metadata Generation
         id: vars
         run: |
           echo "repo_owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
-
       - name: 🔑 Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: 🏗️ Build & Push Backend
         uses: docker/build-push-action@v5
         with:
@@ -82,7 +90,6 @@ jobs:
           file: back-end/Dockerfile
           push: true
           tags: ghcr.io/${{ steps.vars.outputs.repo_owner }}/teddy-backend:latest
-
       - name: 🏗️ Build & Push Frontend
         uses: docker/build-push-action@v5
         with:
@@ -103,10 +110,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-
       - name: 🔑 Login to GHCR (VPS)
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
       - name: 📝 Synchronize Environment Config
         run: |
           {
@@ -119,13 +124,10 @@ jobs:
             echo "VITE_API_URL=http://localhost:3000/api/v1"
             echo "REPO_OWNER_LOWER=${{ needs.build-and-push.outputs.repo_owner }}"
           } > .env
-
       - name: 📥 Pull Images
         run: docker compose pull
-
       - name: ⚡ Activate New Instance
         run: docker compose up -d
-
       - name: 🩺 Monitor Health
         run: |
           for i in {1..5}; do
@@ -139,7 +141,6 @@ jobs:
           done
           echo "❌ API não subiu corretamente."
           exit 1
-
       - name: 🧹 Cleanup
         if: always()
         run: |

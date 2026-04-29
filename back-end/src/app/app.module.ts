@@ -7,6 +7,8 @@ import { MetricsModule } from '../metrics/metrics.module';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 import { HealthModule } from '../health/health.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { InitialDDL1777393021612 } from '../database/migrations/1777393021612-InitialDDL';
+import { AddViewsToClient1777405278952 } from '../database/migrations/1777405278952-AddViewsToClient';
 
 @Module({
   imports: [
@@ -21,9 +23,9 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
         username: configService.get('DB_USER'),
         password: configService.get('DB_PASS'),
         database: configService.get('DB_NAME'),
-        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+        autoLoadEntities: true,
         migrationsRun: true,
-        migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
+        migrations: [InitialDDL1777393021612, AddViewsToClient1777405278952],
         synchronize: configService.get('NODE_ENV') !== 'production',
         logging: configService.get('NODE_ENV') === 'development',
       }),

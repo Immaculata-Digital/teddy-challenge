@@ -31,10 +31,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         error = 'Conflict';
       }
       
-      // Em desenvolvimento, podemos querer ver o erro real se não for HttpException
-      if (process.env.NODE_ENV === 'development') {
-        console.error(exception);
-      }
+      // Sempre logar o erro real para podermos debugar no Docker
+      console.error('[GlobalExceptionFilter] Erro não tratado:', exception);
     }
 
     response.status(status).json({

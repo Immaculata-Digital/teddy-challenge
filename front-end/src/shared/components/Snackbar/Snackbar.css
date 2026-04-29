@@ -1,0 +1,83 @@
+.snackbar-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.snackbar {
+  min-width: 300px;
+  max-width: 450px;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #333;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  pointer-events: auto;
+  animation: slideInRight 0.3s ease-out;
+  border-left: 5px solid #ddd;
+}
+
+.snackbar.success {
+  border-left-color: #2ecc71;
+}
+
+.snackbar.error {
+  border-left-color: #ff4d4f;
+}
+
+.snackbar-content {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.snackbar-close {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.snackbar-close:hover {
+  color: #333;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.snackbar.hiding {
+  animation: slideOutRight 0.3s ease-in forwards;
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}

@@ -1,0 +1,2 @@
+/* symlink-like: reuse the same CSS from EmailInput */
+@import '../EmailInput/Input.css';

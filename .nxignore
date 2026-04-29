@@ -1,0 +1,6 @@
+dist-api
+dist
+node_modules
+.nx
+.cache
+tmp

@@ -1,0 +1,63 @@
+version: '3.9'
+
+services:
+  # INFRAESTRUTURA GLOBAL
+  postgres:
+    image: postgres:16-alpine
+    container_name: teddy-postgres
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    environment:
+      POSTGRES_USER: ${DB_USER:-teddy}
+      POSTGRES_PASSWORD: ${DB_PASS:-teddy_secret}
+      POSTGRES_DB: ${DB_NAME:-teddy_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-teddy}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - teddy-network
+    restart: unless-stopped
+
+  # APLICAÇÃO BACK-END
+  backend:
+    build:
+      context: ./
+      dockerfile: back-end/Dockerfile
+    container_name: teddy-backend
+    ports:
+      - '${BACKEND_PORT:-3000}:3000'
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - teddy-network
+    restart: unless-stopped
+
+  # APLICAÇÃO FRONT-END
+  frontend:
+    build:
+      context: ./
+      dockerfile: front-end/Dockerfile
+    container_name: teddy-frontend
+    ports:
+      - '${FRONTEND_PORT:-4200}:80'
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:3000/api/v1}
+    depends_on:
+      - backend
+    networks:
+      - teddy-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  teddy-network:
+    driver: bridge

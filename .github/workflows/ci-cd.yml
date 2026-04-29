@@ -1,0 +1,75 @@
+name: CI/CD Pipeline — Teddy Open Finance
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─────────────────────────────────────────────────
+  # JOB: Validação BACK-END
+  # ─────────────────────────────────────────────────
+  validate-backend:
+    name: Backend (Lint & Test)
+    runs-on: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - uses: nrwl/nx-set-shas@v4
+      - name: Run Backend Tests
+        run: npx nx affected --target=test --projects=api --base=$NX_BASE --head=$NX_HEAD --passWithNoTests
+      - name: Run Backend Lint
+        run: npx nx affected --target=lint --projects=api --base=$NX_BASE --head=$NX_HEAD
+      - name: Run Backend Build
+        run: npx nx affected --target=build --projects=api --base=$NX_BASE --head=$NX_HEAD
+
+  # ─────────────────────────────────────────────────
+  # JOB: Validação FRONT-END
+  # ─────────────────────────────────────────────────
+  validate-frontend:
+    name: Frontend (Lint & Test)
+    runs-on: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - uses: nrwl/nx-set-shas@v4
+      - name: Run Frontend Tests
+        run: npx nx affected --target=test --projects=front-end --base=$NX_BASE --head=$NX_HEAD --passWithNoTests
+      - name: Run Frontend Lint
+        run: npx nx affected --target=lint --projects=front-end --base=$NX_BASE --head=$NX_HEAD
+      - name: Run Frontend Build
+        run: npx nx affected --target=build --projects=front-end --base=$NX_BASE --head=$NX_HEAD
+
+  # ─────────────────────────────────────────────────
+  # JOB: Deploy Direto na VPS
+  # ─────────────────────────────────────────────────
+  deploy:
+    name: Deploy to VPS
+    needs: [validate-backend, validate-frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: production
+    steps:
+      - name: SSH Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ~/teddy-challenge || git clone https://github.com/${{ github.repository }} ~/teddy-challenge
+            cd ~/teddy-challenge
+            git pull origin main
+            docker compose up -d --build

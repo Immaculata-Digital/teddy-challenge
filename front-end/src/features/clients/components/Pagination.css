@@ -1,0 +1,38 @@
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  padding: 1rem 0;
+}
+
+.page-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.page-btn:hover:not(.dots) {
+  border-color: #ec6724;
+  color: #ec6724;
+}
+
+.page-btn.active {
+  background: #ec6724;
+  border-color: #ec6724;
+  color: #fff;
+}
+
+.page-btn.dots {
+  border: none;
+  cursor: default;
+}

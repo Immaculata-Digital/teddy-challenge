@@ -14,9 +14,10 @@ export class MetricsService {
   async getMetrics(): Promise<IDashboardMetrics> {
     const [totalClients, aggregates, recentClients, salaryDistribution] =
       await Promise.all([
-        this.clientsRepo.count(),
+        this.clientsRepo.count({ where: { deleted: false } }),
         this.clientsRepo
           .createQueryBuilder('c')
+          .where('c.deleted = :deleted', { deleted: false })
           .select('COALESCE(AVG(c.salary), 0)', 'avgSalary')
           .addSelect('COALESCE(SUM(c.salary), 0)', 'totalSalary')
           .addSelect('COALESCE(AVG(c.company_value), 0)', 'avgCompanyValue')
@@ -25,6 +26,7 @@ export class MetricsService {
           .addSelect('COALESCE(MIN(c.salary), 0)', 'minSalary')
           .getRawOne(),
         this.clientsRepo.find({
+          where: { deleted: false },
           order: { createdAt: 'DESC' },
           take: 5,
         }),
@@ -68,6 +70,7 @@ export class MetricsService {
             min: range.min,
             max: range.max,
           })
+          .andWhere('c.deleted = false')
           .getCount();
         return { label: range.label, count };
       }),

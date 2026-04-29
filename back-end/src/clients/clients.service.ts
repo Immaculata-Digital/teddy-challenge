@@ -21,6 +21,7 @@ export class ClientsService {
 
   async findAll({ page, limit }: { page: number; limit: number }): Promise<IPagination<Client>> {
     const [data, total] = await this.clientsRepo.findAndCount({
+      where: { deleted: false },
       skip: (page - 1) * limit,
       take: limit,
       order: { createdAt: 'DESC' },
@@ -36,7 +37,7 @@ export class ClientsService {
   }
 
   async findOne(uuid: string): Promise<Client> {
-    const client = await this.clientsRepo.findOneBy({ uuid });
+    const client = await this.clientsRepo.findOneBy({ uuid, deleted: false });
     if (!client) {
       throw new NotFoundException(`Cliente com UUID ${uuid} não encontrado`);
     }

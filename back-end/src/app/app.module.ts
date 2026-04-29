@@ -9,6 +9,7 @@ import { HealthModule } from '../health/health.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { InitialDDL1777393021612 } from '../database/migrations/1777393021612-InitialDDL';
 import { AddViewsToClient1777405278952 } from '../database/migrations/1777405278952-AddViewsToClient';
+import { CreateAuditLogs1777405300000 } from '../database/migrations/1777405300000-CreateAuditLogs';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { AddViewsToClient1777405278952 } from '../database/migrations/1777405278
         database: configService.get('DB_NAME'),
         autoLoadEntities: true,
         migrationsRun: true,
-        migrations: [InitialDDL1777393021612, AddViewsToClient1777405278952],
+        migrations: [InitialDDL1777393021612, AddViewsToClient1777405278952, CreateAuditLogs1777405300000],
         synchronize: configService.get('NODE_ENV') !== 'production',
         logging: configService.get('NODE_ENV') === 'development',
       }),

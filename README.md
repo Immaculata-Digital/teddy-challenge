@@ -325,3 +325,40 @@ Uma arquitetura de microsserviços ou aplicações distribuídas em nuvem só é
 
 ## 📝 Considerações do MVP
 Este projeto foi desenvolvido seguindo as melhores práticas de Clean Code, SOLID e Dry. Por ser um MVP, o foco foi na solidez da infraestrutura e nos fluxos críticos de negócio, garantindo uma base que pode escalar tanto em código quanto em infraestrutura sem necessidade de refatoração pesada.
+
+
+## Justificativas do porquê utilizar:
+
+## Docker
+O Docker foi utilizado para garantir que o ambiente de desenvolvimento fosse consistente com o ambiente de produção. Além disso, o Docker Compose foi utilizado para facilitar a orquestração dos serviços, permitindo que o desenvolvimento e o teste fossem realizados de forma isolada.
+
+## Github Actions
+O Github Actions foi utilizado para automatizar o processo de CI/CD, garantindo que as alterações fossem testadas e implantadas de forma consistente. 
+
+## Nginx
+O Nginx foi utilizado para servir o front-end de forma estática, além de atuar como proxy reverso para o back-end.
+
+## Nx Monorepo
+O Nx foi utilizado para gerenciar o monorepo, permitindo que o desenvolvimento e o teste fossem realizados de forma isolada. Além disso, o Nx permite o compartilhamento de contratos (DTOs) e validações (Zod) entre as pontas, garantindo que o Backend e o Frontend falem a mesma língua sem duplicação de código.
+
+## TypeORM com Clean Code
+O TypeORM foi utilizado para persistir os dados no banco de dados, seguindo os princípios de Clean Code e SOLID. 
+
+## JWT
+O JWT foi utilizado para autenticação e autorização dos usuários.
+
+## JEST
+O Jest foi utilizado para testar o back-end, garantindo que as alterações fossem testadas e implantadas de forma consistente. 
+
+## Playwright
+O Playwright foi utilizado para testar o front-end, garantindo que as alterações fossem testadas e implantadas de forma consistente. 
+
+## Prettier
+O Prettier foi utilizado para formatar o código, garantindo que as alterações fossem testadas e implantadas de forma consistente. 
+
+## ESLint
+O ESLint foi utilizado para garantir que o código fosse consistente, seguindo as melhores práticas de Clean Code e SOLID. 
+
+## Prometheus
+O Prometheus foi utilizado para monitorar o back-end, garantindo que as alterações fossem testadas e implantadas de forma consistente. 
+

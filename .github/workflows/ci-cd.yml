@@ -12,22 +12,32 @@ jobs:
   # ─────────────────────────────────────────────────
   validate-backend:
     name: Backend (Lint & Test)
-    runs-on: [self-hosted, production]
+    runs-on: production
     steps:
-      - uses: actions/checkout@v4
+      - name: 🚀 Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
-      - run: npm ci
-      - uses: nrwl/nx-set-shas@v4
-      - name: Run Backend Tests
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Nx Set SHAs
+        uses: nrwl/nx-set-shas@v4
+
+      - name: 🧪 Run Backend Tests
         run: npx nx affected --target=test --projects=api --base=$NX_BASE --head=$NX_HEAD --passWithNoTests
-      - name: Run Backend Lint
+
+      - name: 🔍 Run Backend Lint
         run: npx nx affected --target=lint --projects=api --base=$NX_BASE --head=$NX_HEAD
-      - name: Run Backend Build
+
+      - name: 🏗️ Run Backend Build
         run: npx nx affected --target=build --projects=api --base=$NX_BASE --head=$NX_HEAD
 
   # ─────────────────────────────────────────────────
@@ -35,41 +45,100 @@ jobs:
   # ─────────────────────────────────────────────────
   validate-frontend:
     name: Frontend (Lint & Test)
-    runs-on: [self-hosted, production]
+    runs-on: production
     steps:
-      - uses: actions/checkout@v4
+      - name: 🚀 Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
-      - run: npm ci
-      - uses: nrwl/nx-set-shas@v4
-      - name: Run Frontend Tests
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Nx Set SHAs
+        uses: nrwl/nx-set-shas@v4
+
+      - name: 🧪 Run Frontend Tests
         run: npx nx affected --target=test --projects=front-end --base=$NX_BASE --head=$NX_HEAD --passWithNoTests
-      - name: Run Frontend Lint
+
+      - name: 🔍 Run Frontend Lint
         run: npx nx affected --target=lint --projects=front-end --base=$NX_BASE --head=$NX_HEAD
-      - name: Run Frontend Build
+
+      - name: 🏗️ Run Frontend Build
         run: npx nx affected --target=build --projects=front-end --base=$NX_BASE --head=$NX_HEAD
 
   # ─────────────────────────────────────────────────
-  # JOB: Deploy Direto na VPS
+  # JOB: Deploy Direto na VPS (Self-Hosted)
   # ─────────────────────────────────────────────────
   deploy:
-    name: Deploy to VPS
+    name: Deploy to Server
     needs: [validate-backend, validate-frontend]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: [self-hosted, production]
+    runs-on: production
     steps:
-      - name: SSH Deploy
-        uses: appleboy/ssh-action@v1.0.3
+      - name: 🚀 Checkout
+        uses: actions/checkout@v4
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd ~/teddy-challenge || git clone https://github.com/${{ github.repository }} ~/teddy-challenge
-            cd ~/teddy-challenge
-            git pull origin main
-            docker compose up -d --build
+          fetch-depth: 1
+          clean: true
+
+      - name: 📝 Synchronize Environment Config
+        run: |
+          {
+            echo "DB_HOST=${{ secrets.DB_HOST }}"
+            echo "DB_PORT=${{ secrets.DB_PORT }}"
+            echo "DB_USER=${{ secrets.DB_USER }}"
+            echo "DB_PASS=${{ secrets.DB_PASS }}"
+            echo "DB_NAME=${{ secrets.DB_NAME }}"
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}"
+            echo "VITE_API_URL=http://localhost:3000/api/v1"
+          } > .env
+
+      - name: ⚡ Activate New Instance
+        run: docker compose up -d --build
+
+      - name: 🩺 Monitor Health & Stability
+        id: healthcheck
+        run: |
+          SLEEP_TIME=2
+          for i in {1..5}; do
+            echo "🩺 Tentativa $i/5 (Aguardando ${SLEEP_TIME}s)..."
+            sleep $SLEEP_TIME
+            
+            # Verifica o healthcheck do back-end
+            RESPONSE=$(curl -s http://localhost:3000/api/v1/healthz || echo "FAILED")
+            
+            if [[ "$RESPONSE" == *"ok"* ]]; then
+              echo "✅ API saudável!"
+              exit 0
+            fi
+            
+            echo "⚠️ Tentativa $i/5: Resposta inesperada: $RESPONSE"
+            SLEEP_TIME=$((SLEEP_TIME * 2))
+          done
+
+          echo "❌ API não ficou saudável após o deploy."
+          exit 1
+
+      - name: 🚨 Deployment Failure Report
+        if: failure()
+        run: |
+          echo "================================================================="
+          echo "🔍 DIAGNÓSTICO DE FALHA DE DEPLOY"
+          echo "================================================================="
+          docker ps -a
+          echo "📄 Logs do Backend:"
+          docker logs --tail 50 teddy-backend
+          echo "================================================================="
+
+      - name: 🧹 Clean Up
+        if: always()
+        run: |
+          docker image prune -f
+          rm -f .env

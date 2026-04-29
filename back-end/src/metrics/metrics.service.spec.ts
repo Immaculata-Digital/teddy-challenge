@@ -18,6 +18,7 @@ describe('MetricsService', () => {
       minSalary: '1000',
     }),
     where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
     getCount: jest.fn().mockResolvedValue(1),
   };
 

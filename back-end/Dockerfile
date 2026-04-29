@@ -5,7 +5,7 @@
 FROM node:22-alpine AS base
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
 FROM base AS builder
 COPY . .
@@ -16,7 +16,7 @@ WORKDIR /app
 
 # Apenas dependências de produção
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev --ignore-scripts --legacy-peer-deps && npm cache clean --force
+RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
 
 # Copiar build do NestJS (conforme definido no project.json como dist-api)
 COPY --from=builder /app/dist-api ./dist

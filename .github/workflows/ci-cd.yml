@@ -12,7 +12,7 @@ jobs:
   # ─────────────────────────────────────────────────
   validate-backend:
     name: Backend (Lint & Test)
-    runs-on: production
+    runs-on: [self-hosted, production]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,7 +35,7 @@ jobs:
   # ─────────────────────────────────────────────────
   validate-frontend:
     name: Frontend (Lint & Test)
-    runs-on: production
+    runs-on: [self-hosted, production]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -60,7 +60,7 @@ jobs:
     name: Deploy to VPS
     needs: [validate-backend, validate-frontend]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: production
+    runs-on: [self-hosted, production]
     steps:
       - name: SSH Deploy
         uses: appleboy/ssh-action@v1.0.3

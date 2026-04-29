@@ -12,8 +12,6 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_BACKEND: ghcr.io/${{ github.repository_owner }}/teddy-backend
-  IMAGE_FRONTEND: ghcr.io/${{ github.repository_owner }}/teddy-frontend
 
 jobs:
   # ─────────────────────────────────────────────────
@@ -59,9 +57,16 @@ jobs:
     needs: [validate-backend, validate-frontend]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    outputs:
+      repo_owner: ${{ steps.vars.outputs.repo_owner }}
     steps:
       - name: 🚀 Checkout
         uses: actions/checkout@v4
+
+      - name: 🆔 Metadata Generation
+        id: vars
+        run: |
+          echo "repo_owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: 🔑 Login to GHCR
         uses: docker/login-action@v3
@@ -76,7 +81,7 @@ jobs:
           context: .
           file: back-end/Dockerfile
           push: true
-          tags: ${{ env.IMAGE_BACKEND }}:latest
+          tags: ghcr.io/${{ steps.vars.outputs.repo_owner }}/teddy-backend:latest
 
       - name: 🏗️ Build & Push Frontend
         uses: docker/build-push-action@v5
@@ -84,7 +89,7 @@ jobs:
           context: .
           file: front-end/Dockerfile
           push: true
-          tags: ${{ env.IMAGE_FRONTEND }}:latest
+          tags: ghcr.io/${{ steps.vars.outputs.repo_owner }}/teddy-frontend:latest
 
   # ─────────────────────────────────────────────────
   # STAGE 3: Deploy (Roda na sua VPS)
@@ -104,7 +109,6 @@ jobs:
 
       - name: 📝 Synchronize Environment Config
         run: |
-          REPO_OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           {
             echo "DB_HOST=${{ secrets.DB_HOST }}"
             echo "DB_PORT=${{ secrets.DB_PORT }}"
@@ -113,7 +117,7 @@ jobs:
             echo "DB_NAME=${{ secrets.DB_NAME }}"
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}"
             echo "VITE_API_URL=http://localhost:3000/api/v1"
-            echo "REPO_OWNER_LOWER=${REPO_OWNER_LOWER}"
+            echo "REPO_OWNER_LOWER=${{ needs.build-and-push.outputs.repo_owner }}"
           } > .env
 
       - name: 📥 Pull Images

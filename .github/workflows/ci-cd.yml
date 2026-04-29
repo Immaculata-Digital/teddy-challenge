@@ -30,7 +30,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - uses: nrwl/nx-set-shas@v4
       - run: npx nx affected --target=test --projects=api --base=$NX_BASE --head=$NX_HEAD --passWithNoTests
       - run: npx nx affected --target=lint --projects=api --base=$NX_BASE --head=$NX_HEAD
@@ -46,7 +46,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - uses: nrwl/nx-set-shas@v4
       - run: npx nx affected --target=test --projects=front-end --base=$NX_BASE --head=$NX_HEAD --passWithNoTests
       - run: npx nx affected --target=lint --projects=front-end --base=$NX_BASE --head=$NX_HEAD

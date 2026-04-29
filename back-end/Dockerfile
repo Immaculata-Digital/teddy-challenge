@@ -18,8 +18,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts --legacy-peer-deps && npm cache clean --force
 
-# Copiar build do NestJS
-COPY --from=builder /app/dist/back-end ./dist
+# Copiar build do NestJS (conforme definido no project.json como dist-api)
+COPY --from=builder /app/dist-api ./dist
 
 EXPOSE 3000
 ENV NODE_ENV=production

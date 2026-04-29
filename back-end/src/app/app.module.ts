@@ -14,6 +14,9 @@ import { CreateAuditLogs1777405300000 } from '../database/migrations/17774053000
 @Module({
   imports: [
     ConfigModule,
+    PrometheusModule.register({
+      path: '/prometheus',
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -30,9 +33,6 @@ import { CreateAuditLogs1777405300000 } from '../database/migrations/17774053000
         synchronize: configService.get('NODE_ENV') !== 'production',
         logging: configService.get('NODE_ENV') === 'development',
       }),
-    }),
-    PrometheusModule.register({
-      path: '/metrics',
     }),
     AuthModule,
     ClientsModule,

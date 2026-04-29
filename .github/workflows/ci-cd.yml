@@ -102,7 +102,7 @@ jobs:
   deploy:
     name: Deploy to Server
     needs: build-and-push
-    runs-on: self-hosted
+    runs-on: [self-hosted, production]
     steps:
       - name: 🚀 Checkout Infra
         uses: actions/checkout@v4
